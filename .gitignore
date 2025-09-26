@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Archivos de compilación
+client/build/
+
+# Archivos de sistema operativo
+.DS_Store
+
+# # Logs y archivos temporales
+# *.log
+# server/logs/
+# server/temp/
+
+# Archivos de entorno y datos sensibles
+# server/.env
+# server/database/
+# server/credentials/
+server/uploads/
+server/.env
+server/credentials/oauth-credentials.json
+node_modules/
+server/credentials/oauth-tokens.json
