@@ -144,6 +144,15 @@ app.use(sanitizeInput);
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir archivos estáticos del frontend construido (para producción)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Para cualquier ruta que no sea /api, servir el index.html del frontend
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
+}
 
 // Middleware para logging de requests
 app.use((req, res, next) => {
