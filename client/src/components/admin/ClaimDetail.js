@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useCompany } from '../../context/CompanyContext';
 
 const ClaimDetail = () => {
   const { id } = useParams();
