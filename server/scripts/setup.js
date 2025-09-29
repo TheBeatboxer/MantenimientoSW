@@ -17,7 +17,7 @@ async function setupDatabase() {
     const result = await db.query(`
       SELECT id FROM users_admin WHERE username = ?
     `, ['admin']);
-    
+
     if (result.length === 0) {
       await db.query(`
         INSERT INTO users_admin (username, email, password_hash, full_name, role)
@@ -28,7 +28,16 @@ async function setupDatabase() {
       console.log('   Usuario: admin');
       console.log('   Contraseña: ' + adminPassword);
     } else {
-      console.log('ℹ️  Usuario administrador ya existe');
+      // Update existing admin password
+      await db.query(`
+        UPDATE users_admin 
+        SET password_hash = ?, email = ?, full_name = ?, role = ?
+        WHERE username = ?
+      `, [hashedPassword, 'admin@empresa.com', 'Administrador Principal', 'admin', 'admin']);
+      
+      console.log('✅ Contraseña del usuario administrador actualizada');
+      console.log('   Usuario: admin');
+      console.log('   Nueva Contraseña: ' + adminPassword);
     }
     
     // Crear directorios necesarios
@@ -51,15 +60,22 @@ async function setupDatabase() {
     
   } catch (error) {
     console.error('❌ Error en la configuración:', error);
-    process.exit(1);
+    throw error;
   }
 }
 
 // Ejecutar si se llama directamente
 if (require.main === module) {
-  setupDatabase().then(() => {
-    process.exit(0);
-  });
+  setupDatabase()
+    .then(async () => {
+      await db.close();
+      process.exit(0);
+    })
+    .catch(async (error) => {
+      console.error('Error in setup:', error);
+      await db.close();
+      process.exit(1);
+    });
 }
 
 module.exports = setupDatabase;

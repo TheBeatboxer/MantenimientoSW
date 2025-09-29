@@ -40,20 +40,20 @@ async function migrateToSQLite() {
   } catch (error) {
     console.error('❌ Error en la migración:', error);
     throw error;
-  } finally {
-    await db.close();
   }
 }
 
 // Ejecutar si se llama directamente
 if (require.main === module) {
   migrateToSQLite()
-    .then(() => {
+    .then(async () => {
       console.log('✅ Script de migración completado');
+      await db.close();
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(async (error) => {
       console.error('❌ Error en script de migración:', error);
+      await db.close();
       process.exit(1);
     });
 }

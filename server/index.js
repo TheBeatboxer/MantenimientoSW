@@ -216,6 +216,10 @@ app.use((error, req, res, next) => {
 // Función para inicializar el servidor
 async function startServer() {
   try {
+    // Ejecutar scripts de configuración de base de datos
+    await require('./scripts/migrateToSQLite')();
+    await require('./scripts/setup')();
+
     // Conectar a SQLite
     await db.connect();
     console.log('✅ Conexión a SQLite establecida');

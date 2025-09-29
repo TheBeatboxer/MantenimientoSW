@@ -9,6 +9,10 @@ class Database {
   }
 
   async connect() {
+    if (this.db) {
+      console.log('Database already connected');
+      return;
+    }
     return new Promise((resolve, reject) => {
       this.db = new sqlite3.Database(this.dbPath, (err) => {
         if (err) {
