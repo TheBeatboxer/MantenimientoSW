@@ -26,21 +26,6 @@ const AdminLogin = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.username.trim()) {
-      newErrors.username = 'El usuario es requerido';
-    }
-    
-    if (!formData.password.trim()) {
-      newErrors.password = 'La contraseña es requerida';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
