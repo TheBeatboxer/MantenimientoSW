@@ -16,6 +16,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [csrfToken, setCsrfToken] = useState(null);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem('admin_token');
+    delete axios.defaults.headers.common['Authorization'];
+    setUser(null);
+    setCsrfToken(null);
+  }, [setUser, setCsrfToken]);
+
   // Configurar axios con interceptores
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -61,13 +68,6 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.error || 'Error al iniciar sesión'
       };
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('admin_token');
-    delete axios.defaults.headers.common['Authorization'];
-    setUser(null);
-    setCsrfToken(null);
   };
 
   const checkAuth = useCallback(async () => {
