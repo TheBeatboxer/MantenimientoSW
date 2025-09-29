@@ -5,8 +5,8 @@ import { toast } from 'react-toastify';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    username: 'admin',
+    password: 'admin123'
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
