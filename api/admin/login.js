@@ -1,16 +1,41 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const db = require('../../server/config/database');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  // Simple mock for demo - replace with real DB logic
-  if (username === 'admin' && password === 'admin123') {
+    // Buscar usuario
+    const result = await db.query(`
+      SELECT id, username, email, password_hash, full_name, role, is_active
+      FROM users_admin
+      WHERE username = ? OR email = ?
+    `, [username, username]);
+
+    if (result.length === 0) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    const user = result[0];
+
+    if (!user.is_active) {
+      return res.status(401).json({ error: 'Usuario inactivo' });
+    }
+
+    // Verificar contraseña
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    // Generar JWT
     const token = jwt.sign(
-      { userId: 1, username: 'admin', role: 'admin' },
+      { userId: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '8h' }
     );
@@ -19,15 +44,17 @@ export default async function handler(req, res) {
       success: true,
       token,
       user: {
-        id: 1,
-        username: 'admin',
-        email: 'admin@example.com',
-        full_name: 'Administrator',
-        role: 'admin'
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role
       },
-      csrfToken: 'dummy-csrf-token'
+      csrfToken: require('crypto').randomBytes(32).toString('hex')
     });
-  } else {
-    res.status(401).json({ error: 'Credenciales inválidas' });
+
+  } catch (error) {
+    console.error('Error in admin login:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }

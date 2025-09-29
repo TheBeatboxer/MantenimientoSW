@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const db = require('../../server/config/database');
 
 function authenticateToken(req) {
   const authHeader = req.headers['authorization'];
@@ -24,36 +25,104 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
-  // Mock data for demo
-  const mockClaims = [
-    {
-      id: 1,
-      claim_number: 'RCL-001',
-      date_created: '2024-01-15',
-      status: 'pendiente',
-      claim_type: 'reclamo',
-      consumer_name: 'Juan',
-      consumer_lastname_p: 'Pérez',
-      consumer_lastname_m: 'García',
-      document_number: '12345678',
-      phone: '987654321',
-      email: 'juan@example.com',
-      reason: 'Producto defectuoso'
-    }
-  ];
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      claim_type,
+      date_from,
+      date_to,
+      search
+    } = req.query;
 
-  res.json({
-    success: true,
-    data: {
-      claims: mockClaims,
-      pagination: {
-        current_page: 1,
-        total_pages: 1,
-        total_items: 1,
-        items_per_page: 20,
-        has_next: false,
-        has_prev: false
-      }
+    // Validar y sanitizar parámetros
+    const currentPage = Math.max(1, parseInt(page));
+    const itemsPerPage = Math.min(100, Math.max(1, parseInt(limit))); // Máximo 100 items por página
+    const offset = (currentPage - 1) * itemsPerPage;
+
+    let whereConditions = [];
+    let queryParams = [];
+
+    // Construir condiciones WHERE de forma segura
+    if (status && ['pendiente', 'en_revision', 'respondido', 'cerrado'].includes(status)) {
+      whereConditions.push(`status = ?`);
+      queryParams.push(status);
     }
-  });
+
+    if (claim_type && ['reclamo', 'queja'].includes(claim_type)) {
+      whereConditions.push(`claim_type = ?`);
+      queryParams.push(claim_type);
+    }
+
+    if (date_from) {
+      whereConditions.push(`date_created >= ?`);
+      queryParams.push(date_from);
+    }
+
+    if (date_to) {
+      whereConditions.push(`date_created <= ?`);
+      queryParams.push(date_to);
+    }
+
+    if (search && search.trim().length > 0) {
+      const searchTerm = search.trim();
+      whereConditions.push(`(
+        consumer_name LIKE ? OR
+        consumer_lastname_p LIKE ? OR
+        consumer_lastname_m LIKE ? OR
+        document_number LIKE ? OR
+        claim_number LIKE ?
+      )`);
+      const searchPattern = `%${searchTerm}%`;
+      queryParams.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Ejecutar consultas en paralelo para mejor rendimiento
+    const [claimsResult, countResult] = await Promise.all([
+      // Consulta principal con paginación
+      db.query(`
+        SELECT
+          id, claim_number, date_created, status, claim_type,
+          consumer_name, consumer_lastname_p, consumer_lastname_m,
+          document_type, document_number, phone, email,
+          reason, amount, currency, pdf_generated, email_sent
+        FROM claims
+        ${whereClause}
+        ORDER BY date_created DESC
+        LIMIT ? OFFSET ?
+      `, [...queryParams, itemsPerPage, offset]),
+
+      // Consulta optimizada para contar total (sin ORDER BY ni LIMIT)
+      db.query(`
+        SELECT COUNT(*) as total
+        FROM claims
+        ${whereClause}
+      `, queryParams)
+    ]);
+
+    const total = parseInt(countResult[0].total);
+    const totalPages = Math.ceil(total / itemsPerPage);
+
+    res.json({
+      success: true,
+      data: {
+        claims: claimsResult,
+        pagination: {
+          current_page: currentPage,
+          total_pages: totalPages,
+          total_items: total,
+          items_per_page: itemsPerPage,
+          has_next: currentPage < totalPages,
+          has_prev: currentPage > 1
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching claims:', error);
+    res.status(500).json({ error: 'Error al obtener los reclamos' });
+  }
 }
