@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -9,9 +7,7 @@ const AdminLogin = () => {
     password: 'admin123'
   });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { login } = useAuth();
+
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
