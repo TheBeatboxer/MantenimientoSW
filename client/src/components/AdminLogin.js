@@ -47,25 +47,9 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    
-    try {
-      const result = await login(formData.username, formData.password);
-      
-      if (result.success) {
-        toast.success('Inicio de sesión exitoso');
-        navigate('/admin');
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Error al iniciar sesión');
-    } finally {
-      setIsLoading(false);
-    }
+
+    // Direct navigation to dashboard without authentication
+    navigate('/admin');
   };
 
   return (
