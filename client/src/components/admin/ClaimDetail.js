@@ -7,7 +7,6 @@ import { useCompany } from '../../context/CompanyContext';
 const ClaimDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { companyInfo } = useCompany();
   const [claim, setClaim] = useState(null);
   const [files, setFiles] = useState([]);
   const [auditLog, setAuditLog] = useState([]);

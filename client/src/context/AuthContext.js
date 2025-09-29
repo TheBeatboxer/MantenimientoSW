@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, [checkAuth, logout]);
 
   const value = {
     user,
