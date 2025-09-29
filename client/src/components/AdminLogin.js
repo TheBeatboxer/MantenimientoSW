@@ -89,11 +89,10 @@ const AdminLogin = () => {
               value={formData.username}
               onChange={handleInputChange}
               placeholder="Ingresa tu usuario"
-              disabled={isLoading}
             />
             {errors.username && <span className="form-error">{errors.username}</span>}
           </div>
-          
+
           <div className="form-group">
             <label className="form-label required">Contraseña</label>
             <input
@@ -103,25 +102,16 @@ const AdminLogin = () => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Ingresa tu contraseña"
-              disabled={isLoading}
             />
             {errors.password && <span className="form-error">{errors.password}</span>}
           </div>
-          
+
           <button
             type="submit"
             className="btn btn-primary"
             style={{ width: '100%', marginTop: '1rem' }}
-            disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <div className="spinner"></div>
-                Iniciando sesión...
-              </>
-            ) : (
-              'Iniciar Sesión'
-            )}
+            Iniciar Sesión
           </button>
         </form>
 
