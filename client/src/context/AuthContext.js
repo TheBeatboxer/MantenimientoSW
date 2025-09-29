@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       axios.interceptors.response.eject(responseInterceptor);
     };
-  }, []);
+  }, [logout]);
 
   const login = async (username, password) => {
     try {
