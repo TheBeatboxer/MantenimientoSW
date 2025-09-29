@@ -63,12 +63,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = useCallback(() => {
+  const logout = () => {
     localStorage.removeItem('admin_token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
     setCsrfToken(null);
-  }, []);
+  };
 
   const checkAuth = useCallback(async () => {
     try {
